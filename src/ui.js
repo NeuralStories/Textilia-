@@ -1,5 +1,5 @@
 /* ── UI HELPERS ── */
-import { calc, tots, cuadrante, fmtE, fmtM, calcularCuadranteCorte, agruparCuadrante } from './calculos.js';
+import { calc, tots, cuadrante, fmtE, fmtM } from './calculos.js';
 
 let _sT; // Timer for save indicator
 
@@ -123,7 +123,7 @@ export const ui = {
 
   renderRel(o, hs, t, lkAll, lkPrecio) {
     const c = o.cfg;
-    const isTec = !lkPrecio && o.estado !== 'cerrada';
+    const isTec = !lkPrecio && o.estado !== 'cerrada'; // Simplified check based on passed params
 
     document.getElementById('cfgS').innerHTML = isTec
       ? `<div><div class="ci-l">Tipo tela</div>
@@ -148,17 +148,24 @@ export const ui = {
         <div><div class="ci-l">P.Tela €/m</div><input class="ci-i" type="number" step="0.01" value="${c.pT}" ${lkAll ? 'disabled' : ''} onchange="upCfg('pT',+this.value)"></div>
         <div><div class="ci-l">Margen %</div><input class="ci-i" type="number" step="1" value="${c.mg}" ${lkAll ? 'disabled' : ''} onchange="upCfg('mg',+this.value)"></div>`;
 
+    // Render Manual Entry Form
+    if (!lkAll) {
+        this.renderMedForm(o);
+    } else {
+        document.getElementById('medForm').innerHTML = '';
+    }
+
     document.getElementById('relB').innerHTML = hs.map(h => `
       <tr>
-        <td class="h">${h.num}</td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"></td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"></td>
-        <td class="n">${h.mh}</td>
-        <td class="n">${h.nc}</td>
-        <td class="n ac">${h.mt}</td>
-        <td class="n">${fmtE(h.ct)}</td>
-        <td class="n">${fmtE(h.cc)}</td>
-        <td class="n">${fmtE(h.th)}</td>
+        <td><input class="c-i tl" value="${h.num}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','habitacion',this.value)" style="width:100%"></td>
+        <td><input class="c-i" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','ancho_hueco',+this.value)"></td>
+        <td><input class="c-i" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','altura',+this.value)"></td>
+        <td><input class="c-i" type="number" step="0.01" value="${h.mh}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','medida_hoja',+this.value)"></td>
+        <td><input class="c-i" type="number" step="1" value="${h.nc}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','numero_hojas',+this.value)"></td>
+        <td class="n ac">${h.mts_tela || h.mt}</td>
+        <td class="n">${fmtE(h.coste_tela || h.ct)}</td>
+        <td class="n">${fmtE(h.coste_confeccion || h.cc)}</td>
+        <td class="n">${fmtE(h.total_hueco || h.th)}</td>
         <td>${!lkAll ? `<button class="del-btn" onclick="delHab('${h.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>` : ''}</td>
       </tr>`).join('');
     document.getElementById('relF').innerHTML = `
@@ -337,44 +344,104 @@ export const ui = {
     `;
   },
 
-  renderCuad(o, hs) {
-    const tbody = document.getElementById('cuadB');
-    const grid = document.getElementById('cuadG');
-    if (!tbody || !grid) return;
-
-    // Adaptar datos para calcularCuadranteCorte
-    const huecosAdaptados = hs.map(h => ({
-        habitacion: h.num,
-        ancho_real: h.an,
-        altura_real: h.al,
-        num_hojas: h.nc
-    }));
-
-    // Procesar todos los huecos por el motor matemático
-    const huecosProcesados = huecosAdaptados.map(h => calcularCuadranteCorte(h, o.cfg));
-
-    // Renderizar tabla detallada
-    tbody.innerHTML = huecosProcesados.map(h => `
-        <tr>
-            <td class="h">${h.habitacion}</td>
-            <td class="n">${h.ancho_real.toFixed(2)}</td>
-            <td class="n">${h.altura_real.toFixed(2)}</td>
-            <td class="n">${h.ancho_estandar.toFixed(2)}</td>
-            <td class="n ac">${h.ancho_corte.toFixed(2)}</td>
-            <td class="n">${h.num_cortes}</td>
-            <td class="n ac">${h.altura_corte.toFixed(2)}</td>
-        </tr>
-    `).join('');
-
-    // Renderizar tarjetas agrupadas
-    const grupos = agruparCuadrante(huecosProcesados);
-    grid.innerHTML = grupos.map(g => `
-        <div class="cuad-card">
-            <div class="cuad-d">${g.ancho.toFixed(2)}<span class="cuad-x">×</span>${g.altura.toFixed(2)}</div>
-            <div class="cuad-h">Hab: ${g.habitaciones.join(', ')}</div>
-            <div class="cuad-b">${g.total_cortes} corte${g.total_cortes > 1 ? 's' : ''}</div>
+  renderMedForm(o) {
+    const c = o.cfg;
+    const nextNum = 100 + o.habs.length + 1;
+    
+    document.getElementById('medForm').innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--pap-3);border-radius:var(--r12);padding:16px;margin-bottom:14px;box-shadow:var(--s-xs)">
+        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--rust);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Nueva medición
         </div>
-    `).join('');
+        
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;row-gap:16px">
+          <!-- DATOS BASE -->
+          <div style="grid-column:span 1">
+            <div class="ci-l">Habitación</div>
+            <input class="ci-i tl" id="nm-hab" value="${nextNum}" placeholder="Ej: 101">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Ancho Hueco</div>
+            <input class="ci-i" type="number" id="nm-ancho" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Altura</div>
+            <input class="ci-i" type="number" id="nm-alto" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Medida Hoja</div>
+            <input class="ci-i" type="number" id="nm-med-hoja" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Nº Hojas</div>
+            <input class="ci-i" type="number" id="nm-hojas" value="${c.nH}" min="1">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Fruncido</div>
+            <input class="ci-i" type="number" id="nm-fr" step="0.1" value="${c.fr}">
+          </div>
+
+          <!-- PARÁMETROS -->
+          <div style="grid-column:span 1">
+            <div class="ci-l">Bajo y Cresta</div>
+            <input class="ci-i" type="number" id="nm-bj" step="0.01" value="${c.bj}">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Cierre</div>
+            <input class="ci-i" type="number" id="nm-ci" step="0.01" value="${c.ci}">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Precio Conf.</div>
+            <input class="ci-i" type="number" id="nm-cc" step="0.01" value="${c.pC}" placeholder="€/m">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Precio Tela</div>
+            <input class="ci-i" type="number" id="nm-pt" step="0.01" value="${c.pT}">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Precio Inst.</div>
+            <input class="ci-i" type="number" id="nm-pi" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Número Horas</div>
+            <input class="ci-i" type="number" id="nm-horas" step="0.5" placeholder="0">
+          </div>
+
+          <!-- MARGEN -->
+          <div style="grid-column:span 1">
+            <div class="ci-l">Margen %</div>
+            <input class="ci-i" type="number" id="nm-mg" step="1" value="${c.mg}">
+          </div>
+          
+          <div style="grid-column:span 5;display:flex;align-items:flex-end;justify-content:flex-end">
+             <button class="btn btn-rust btn-sm" id="btn-add-med" style="width:100%;height:34px">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+               Añadir medición
+             </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Bind click event
+    document.getElementById('btn-add-med').onclick = () => window.addMedicion();
+  },
+
+  renderCuad(hs) {
+    document.getElementById('cuadB').innerHTML = hs.map(h => `
+      <tr>
+        <td class="h">${h.num}</td>
+        <td class="n">${h.an}</td><td class="n">${h.al}</td>
+        <td class="n">${h.aEst}</td><td class="n ac">${h.aEst}</td>
+        <td class="n">${h.nc}</td><td class="n ac">${h.alCu}</td>
+      </tr>`).join('');
+    document.getElementById('cuadG').innerHTML = cuadrante(hs).map(g => `
+      <div class="cuad-card">
+        <div class="cuad-d">${g.a}<span class="cuad-x">×</span>${g.al}</div>
+        <div class="cuad-h">Hab: ${g.hs.join(', ')}</div>
+        <div class="cuad-b">${g.c} corte${g.c > 1 ? 's' : ''}</div>
+      </div>`).join('');
   },
 
   renderRiel(hs, lk) {

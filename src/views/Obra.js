@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { ui } from '../ui.js';
 import { router } from '../router.js';
 import { calc, tots, cuadrante, fmtE, fmtM } from '../calculos.js';
+import * as calcV3 from '../logic/calculos_v3.js';
 
 export const Obra = {
   OID: null,
@@ -107,10 +108,17 @@ export const Obra = {
                 <div class="panel on" id="pn-relacion">
                   <div class="pi obra-safe">
                     <div class="mod-hd">
-                      <div class="mod-title">Relación de habitaciones</div>
-                      <button class="btn btn-rust btn-sm hd-m" id="btn-add-hab">+ Añadir</button>
+                      <div class="mod-title">Relación de Mediciones</div>
+                      <button class="btn btn-rust btn-sm" onclick="toggleMedForm()" style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Añadir medición
+                      </button>
                     </div>
                     <div class="cfg-strip" id="cfgS"></div>
+                    
+                    <!-- NEW MANUAL ENTRY ZONE -->
+                    <div id="medForm" style="display:none"></div>
+                    
                     <div class="tw-wrap hd-t">
                       <table class="dtbl">
                         <thead><tr><th>Hab.</th><th class="r">Ancho</th><th class="r">Alto</th><th class="r">Med.Hoja</th><th class="r">Hojas</th><th class="r">Mts Tela</th><th class="r">€ Tela</th><th class="r">€ Conf.</th><th class="r">Total</th><th></th></tr></thead>
@@ -228,8 +236,87 @@ export const Obra = {
     window.delHab = (id) => this.delHab(id);
     window.upHab = (id, f, v) => this.upHab(id, f, v);
     window.upCfg = (f, v) => this.upCfg(f, v);
+    window.addMedicion = () => this.addMedicion();
+    window.toggleMedForm = () => this.toggleMedForm();
 
     this.loadData();
+  },
+
+  toggleMedForm() {
+    const el = document.getElementById('medForm');
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        if (el.style.display === 'block') {
+            const inp = document.getElementById('nm-hab');
+            if (inp) inp.focus();
+        }
+    }
+  },
+
+  addMedicion() {
+    // 1. Get values
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    };
+    const getNum = (id) => {
+        const v = getVal(id);
+        return v === '' ? 0 : parseFloat(v);
+    };
+
+    const hab = getVal('nm-hab');
+    const ancho = getNum('nm-ancho');
+    const alto = getNum('nm-alto');
+
+    // 2. Validation
+    if (!hab || ancho <= 0 || alto <= 0) {
+        ui.showToast('Faltan datos obligatorios (Hab, Ancho, Alto)', 'err');
+        return;
+    }
+
+    // 3. Construct payload (Phase 3 fields)
+    const input = {
+        habitacion: hab,
+        ancho_hueco: ancho,
+        altura: alto,
+        medida_hoja: getNum('nm-med-hoja'),
+        numero_hojas: getNum('nm-hojas'),
+        fruncido: getNum('nm-fr'),
+        bajo_cresta: getNum('nm-bj'),
+        cierre: getNum('nm-ci'),
+        precio_confeccion: getNum('nm-cc'),
+        precio_tela: getNum('nm-pt'),
+        precio_instalacion: getNum('nm-pi'),
+        numero_horas: getNum('nm-horas'),
+        margen: getNum('nm-mg')
+    };
+
+    // 4. Calculate
+    const calculated = calcV3.calcularFila(input);
+
+    // 5. Save (Map to API expected format if needed, or just save object)
+    // Assuming API can handle the new object structure or we map it.
+    // For now, we save the full calculated object.
+    // Mapping to legacy fields for compatibility with existing renderers if they use them:
+    // num -> habitacion, an -> ancho_hueco, al -> altura, mh -> medida_hoja, nc -> numero_hojas
+    // mt -> mts_tela, ct -> coste_tela, cc -> coste_confeccion, th -> total_hueco
+    const payload = {
+        ...calculated,
+        num: calculated.habitacion,
+        an: calculated.ancho_hueco,
+        al: calculated.altura,
+        mh: calculated.medida_hoja,
+        nc: calculated.numero_hojas,
+        mt: calculated.mts_tela,
+        ct: calculated.coste_tela,
+        cc: calculated.coste_confeccion,
+        th: calculated.total_hueco
+    };
+
+    api.addHab(this.OID, payload);
+    this.renderMod(this.activeTab);
+    ui.showSave();
+    ui.showToast('Medición añadida correctamente', 'ok');
   },
 
   loadData() {
@@ -285,7 +372,7 @@ export const Obra = {
     if (tab === 'resumen') ui.renderResumen(o, hs, t);
     if (tab === 'relacion') ui.renderRel(o, hs, t, lkAll, lkPrecio);
     if (tab === 'confeccion') ui.renderCon(o, hs, t);
-    if (tab === 'cuadrante') ui.renderCuad(o, hs);
+    if (tab === 'cuadrante') ui.renderCuad(hs);
     if (tab === 'rieles') ui.renderRiel(hs, lkAll);
   },
 
@@ -306,7 +393,53 @@ export const Obra = {
   },
 
   upHab(hid, f, v) {
-    api.updateHab(this.OID, hid, f, v);
+    // Retrieve current object to recalculate
+    const o = api.getObra(this.OID);
+    const h = o.habs.find(x => x.id === hid);
+    if (!h) return;
+
+    // Update field
+    h[f] = v;
+    
+    // Map legacy keys to new keys if editing legacy fields
+    if (f === 'an') h.ancho_hueco = v;
+    if (f === 'al') h.altura = v;
+    
+    // Recalculate using V3 logic
+    // Ensure all V3 fields exist, fallback to legacy or 0
+    const input = {
+        habitacion: h.habitacion || h.num,
+        ancho_hueco: h.ancho_hueco || h.an,
+        altura: h.altura || h.al,
+        medida_hoja: h.medida_hoja || h.mh || 0,
+        numero_hojas: h.numero_hojas || h.nc || 0,
+        fruncido: h.fruncido || 0,
+        bajo_cresta: h.bajo_cresta || 0,
+        cierre: h.cierre || 0,
+        precio_confeccion: h.precio_confeccion || 0,
+        precio_tela: h.precio_tela || 0,
+        precio_instalacion: h.precio_instalacion || 0,
+        numero_horas: h.numero_horas || 0,
+        margen: h.margen || 0
+    };
+
+    const calculated = calcV3.calcularFila(input);
+    
+    // Merge back
+    Object.assign(h, calculated);
+    
+    // Sync legacy fields for display
+    h.num = h.habitacion;
+    h.an = h.ancho_hueco;
+    h.al = h.altura;
+    h.mh = h.medida_hoja;
+    h.nc = h.numero_hojas;
+    h.mt = h.mts_tela;
+    h.ct = h.coste_tela;
+    h.cc = h.coste_confeccion;
+    h.th = h.total_hueco;
+
+    api.updateHab(this.OID, hid, null, null); // Just trigger save with modified object
     clearTimeout(this._hT); 
     this._hT = setTimeout(() => this.renderMod(this.activeTab), 100);
     ui.showSave();
