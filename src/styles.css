@@ -258,7 +258,7 @@ input,select,textarea,button{font-family:inherit}
 @media(max-width:767px){.pi{padding:14px}}
 @media(min-width:1200px){.pi{padding:24px 28px}}
 .mod-hd{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
-.mod-title{font-family:var(--sans);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.mod-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
 @media(min-width:768px){.mod-title{font-size:22px}}
 
 /* Config strip */
@@ -446,181 +446,190 @@ input,select,textarea,button{font-family:inherit}
 .print-hint{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-35);padding:10px 14px;background:var(--pap-2);border-radius:var(--r8);margin-top:14px}
 .print-hint svg{width:14px;height:14px;flex-shrink:0}
 
-/* ══ TALLER / PRINT STYLES ══ */
-.taller-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: center;
+/* ==========================================================================
+   MÓDULO DE CONFECCIÓN - FORMATO TALLER (PANTALLA E IMPRESIÓN)
+   ========================================================================== */
+
+.print-container {
+    background: #e5e5e5;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
 }
 
-.taller-page {
-  background: white;
-  border: 1px solid var(--pap-3);
-  padding: 20px;
-  width: 100%;
-  max-width: 210mm; /* A4 width approx */
-  box-shadow: var(--s-sm);
-  page-break-inside: avoid;
-  break-inside: avoid;
+.print-page {
+    background: #fff;
+    width: 210mm; /* Formato A4 */
+    min-height: 297mm;
+    padding: 15mm;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-family: var(--sans);
+    color: #000;
 }
 
-.taller-header {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  font-family: var(--serif);
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    text-transform: uppercase;
+    font-size: 15px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-family: var(--serif);
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
-.taller-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 15px;
-}
-
-.taller-table th {
-  background: var(--pap-2);
-  border: 1px solid var(--ink);
-  padding: 8px;
-  font-family: var(--serif);
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  color: var(--ink);
-  letter-spacing: 0.05em;
-}
-
-.taller-table td {
-  border: 1px solid var(--ink);
-  padding: 8px;
-  vertical-align: middle;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink);
-}
-
-.tc-hab { text-align: center; font-weight: 700; font-size: 14px; }
-.tc-corte { text-align: center; white-space: nowrap; }
-.tc-suma { text-align: right; font-weight: 700; }
-
-/* Medidas Cell Design */
-.med-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  padding: 2px 0;
-  min-height: 42px;
-  justify-content: center;
-}
-
-.med-top {
-  font-weight: 700;
-  margin-bottom: 4px;
-  line-height: 1;
-}
-
-.med-line {
-  width: 100%;
-  height: 1px;
-  background: var(--ink);
-  margin-bottom: 4px;
-}
-
-.med-bot {
-  align-self: flex-end; /* Right align */
-  font-weight: 700;
-  line-height: 1;
-}
-
-.taller-footer {
-  border: 1px solid var(--ink);
-  padding: 10px;
-}
-
-.tf-total {
-  text-align: right;
-  font-size: 14px;
-  margin-bottom: 10px;
-  border-bottom: 1px dashed var(--ink-35);
-  padding-bottom: 8px;
-  font-family: var(--mono);
-}
-
-.tf-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  font-size: 11px;
-  font-family: var(--sans);
-  color: var(--ink-60);
-}
-
-.tf-cell {
-  border-bottom: 1px solid var(--pap-3);
-  padding-bottom: 2px;
-  min-height: 18px;
-}
-
-/* Print Media Query */
-@media print {
-  @page { margin: 0; size: auto; }
-  body { background: white; color: black; }
-  
-  /* Hide everything */
-  .topbar, .obra-sb, .mod-tabs, .no-print, .obra-bnav, .fab, .save-ind, .tw {
-    display: none !important;
-  }
-  
-  /* Reset layout */
-  .screen, .obra-shell, .obra-layout, .obra-main, .panels, .panel, .pi {
-    display: block !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    max-width: none !important;
-  }
-
-  #pn-confeccion {
-    display: block !important;
-  }
-
-  /* Hide other panels just in case */
-  .panel:not(#pn-confeccion) {
-    display: none !important;
-  }
-
-  /* Taller Page Print Styles */
-  .taller-container {
-    display: block;
-    gap: 0;
-  }
-
-  .taller-page {
-    border: none;
-    box-shadow: none;
-    max-width: none;
+.print-table {
     width: 100%;
-    padding: 10mm;
-    page-break-after: always;
-    margin: 0;
-  }
-  
-  .taller-page:last-child {
-    page-break-after: auto;
-  }
+    border-collapse: collapse;
+    font-size: 14px;
+}
 
-  .taller-table th {
-    background: #eee !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+.print-table th {
+    text-align: left;
+    padding: 8px 5px;
+    border-bottom: 1px solid #000;
+    font-weight: 700;
+    font-family: var(--serif);
+    letter-spacing: 0.05em;
+    background: var(--pap-2);
+}
+
+.print-table td {
+    padding: 15px 5px;
+    border-bottom: 1px solid #ccc;
+    vertical-align: middle;
+    font-family: var(--mono);
+    font-size: 13px;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* El diseño de la línea divisoria para las medidas */
+.medida-box {
+    display: inline-flex;
+    align-items: flex-end;
+    position: relative;
+    padding-right: 40px; /* Espacio para el alto */
+}
+
+.medida-ancho {
+    border-bottom: 1px solid #000;
+    padding: 0 10px 2px 10px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.medida-alto {
+    position: absolute;
+    right: 0;
+    bottom: -8px; /* Colocado debajo a la derecha de la línea */
+}
+
+.print-subtotal {
+    text-align: right;
+    padding: 15px 5px;
+    font-size: 14px;
+    border-top: 1px dashed #000;
+    border-bottom: 1px dashed #000;
+    margin-top: 20px;
+    font-family: var(--mono);
+}
+
+.print-footer {
+    margin-top: 30px;
+    font-size: 14px;
+}
+
+.pf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 40px;
+}
+
+.pf-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pf-row .line-fill {
+    flex: 1;
+    border-bottom: 1px dotted #000;
+    height: 18px;
+}
+
+/* ==========================================================================
+   REGLAS DE IMPRESIÓN (@media print)
+   ========================================================================== */
+@media print {
+    /* Ocultar la UI del software (Barras laterales, menús, fondo gris) */
+    body {
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .topbar, 
+    .obra-sb, 
+    .obra-bnav, 
+    .mod-tabs, 
+    .fab, 
+    .no-print,
+    .print-actions {
+        display: none !important;
+    }
+
+    /* Ajustar el layout principal para que ocupe todo */
+    .obra-layout {
+        display: block !important;
+    }
+    .obra-main {
+        display: block !important;
+        overflow: visible !important;
+    }
+    .panels {
+        overflow: visible !important;
+    }
+    
+    /* Configuración de las hojas A4 */
+    .print-container {
+        padding: 0;
+        background: transparent;
+        display: block;
+    }
+    
+    .print-page {
+        box-shadow: none;
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+        margin: 0;
+        page-break-inside: avoid;
+        page-break-after: always; /* Salto de página entre bloques de 6 */
+    }
+
+    .print-page:last-child {
+        page-break-after: auto;
+    }
+
+    /* Asegurar que las líneas negras se impriman bien */
+    .medida-ancho {
+        border-bottom: 1.5px solid #000 !important;
+    }
+    
+    .print-table th {
+        background: #eee !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }

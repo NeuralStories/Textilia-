@@ -1,5 +1,5 @@
 /* ── UI HELPERS ── */
-import { calc, tots, cuadrante, fmtE, fmtM } from './calculos.js';
+import { calc, tots, cuadrante, fmtE, fmtM, calcularCuadranteCorte, agruparCuadrante } from './calculos.js';
 
 let _sT; // Timer for save indicator
 
@@ -123,7 +123,7 @@ export const ui = {
 
   renderRel(o, hs, t, lkAll, lkPrecio) {
     const c = o.cfg;
-    const isTec = !lkPrecio && o.estado !== 'cerrada'; // Simplified check based on passed params
+    const isTec = !lkPrecio && o.estado !== 'cerrada';
 
     document.getElementById('cfgS').innerHTML = isTec
       ? `<div><div class="ci-l">Tipo tela</div>
@@ -337,20 +337,44 @@ export const ui = {
     `;
   },
 
-  renderCuad(hs) {
-    document.getElementById('cuadB').innerHTML = hs.map(h => `
-      <tr>
-        <td class="h">${h.num}</td>
-        <td class="n">${h.an}</td><td class="n">${h.al}</td>
-        <td class="n">${h.aEst}</td><td class="n ac">${h.aEst}</td>
-        <td class="n">${h.nc}</td><td class="n ac">${h.alCu}</td>
-      </tr>`).join('');
-    document.getElementById('cuadG').innerHTML = cuadrante(hs).map(g => `
-      <div class="cuad-card">
-        <div class="cuad-d">${g.a}<span class="cuad-x">×</span>${g.al}</div>
-        <div class="cuad-h">Hab: ${g.hs.join(', ')}</div>
-        <div class="cuad-b">${g.c} corte${g.c > 1 ? 's' : ''}</div>
-      </div>`).join('');
+  renderCuad(o, hs) {
+    const tbody = document.getElementById('cuadB');
+    const grid = document.getElementById('cuadG');
+    if (!tbody || !grid) return;
+
+    // Adaptar datos para calcularCuadranteCorte
+    const huecosAdaptados = hs.map(h => ({
+        habitacion: h.num,
+        ancho_real: h.an,
+        altura_real: h.al,
+        num_hojas: h.nc
+    }));
+
+    // Procesar todos los huecos por el motor matemático
+    const huecosProcesados = huecosAdaptados.map(h => calcularCuadranteCorte(h, o.cfg));
+
+    // Renderizar tabla detallada
+    tbody.innerHTML = huecosProcesados.map(h => `
+        <tr>
+            <td class="h">${h.habitacion}</td>
+            <td class="n">${h.ancho_real.toFixed(2)}</td>
+            <td class="n">${h.altura_real.toFixed(2)}</td>
+            <td class="n">${h.ancho_estandar.toFixed(2)}</td>
+            <td class="n ac">${h.ancho_corte.toFixed(2)}</td>
+            <td class="n">${h.num_cortes}</td>
+            <td class="n ac">${h.altura_corte.toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+    // Renderizar tarjetas agrupadas
+    const grupos = agruparCuadrante(huecosProcesados);
+    grid.innerHTML = grupos.map(g => `
+        <div class="cuad-card">
+            <div class="cuad-d">${g.ancho.toFixed(2)}<span class="cuad-x">×</span>${g.altura.toFixed(2)}</div>
+            <div class="cuad-h">Hab: ${g.habitaciones.join(', ')}</div>
+            <div class="cuad-b">${g.total_cortes} corte${g.total_cortes > 1 ? 's' : ''}</div>
+        </div>
+    `).join('');
   },
 
   renderRiel(hs, lk) {

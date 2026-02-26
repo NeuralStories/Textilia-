@@ -285,7 +285,7 @@ export const Obra = {
     if (tab === 'resumen') ui.renderResumen(o, hs, t);
     if (tab === 'relacion') ui.renderRel(o, hs, t, lkAll, lkPrecio);
     if (tab === 'confeccion') ui.renderCon(o, hs, t);
-    if (tab === 'cuadrante') ui.renderCuad(hs);
+    if (tab === 'cuadrante') ui.renderCuad(o, hs);
     if (tab === 'rieles') ui.renderRiel(hs, lkAll);
   },
 
