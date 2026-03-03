@@ -157,15 +157,15 @@ export const ui = {
 
     document.getElementById('relB').innerHTML = hs.map(h => `
       <tr>
-        <td><input class="c-i tl" value="${h.num}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','habitacion',this.value)" style="width:100%"></td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','ancho_hueco',+this.value)"></td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','altura',+this.value)"></td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.mh}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','medida_hoja',+this.value)"></td>
-        <td><input class="c-i" type="number" step="1" value="${h.nc}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','numero_hojas',+this.value)"></td>
-        <td class="n ac">${h.mts_tela || h.mt}</td>
-        <td class="n">${fmtE(h.coste_tela || h.ct)}</td>
-        <td class="n">${fmtE(h.coste_confeccion || h.cc)}</td>
-        <td class="n">${fmtE(h.total_hueco || h.th)}</td>
+        <td class="h">${h.num}</td>
+        <td><input class="c-i" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"></td>
+        <td><input class="c-i" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"></td>
+        <td class="n">${h.mh}</td>
+        <td class="n">${h.nc}</td>
+        <td class="n ac">${h.mt}</td>
+        <td class="n">${fmtE(h.ct)}</td>
+        <td class="n">${fmtE(h.cc)}</td>
+        <td class="n">${fmtE(h.th)}</td>
         <td>${!lkAll ? `<button class="del-btn" onclick="delHab('${h.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>` : ''}</td>
       </tr>`).join('');
     document.getElementById('relF').innerHTML = `
@@ -356,11 +356,25 @@ export const ui = {
         </div>
         
         <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;row-gap:16px">
-          <!-- DATOS BASE -->
+          <!-- IDENTIFICACIÓN -->
           <div style="grid-column:span 1">
             <div class="ci-l">Habitación</div>
             <input class="ci-i tl" id="nm-hab" value="${nextNum}" placeholder="Ej: 101">
           </div>
+          <div style="grid-column:span 2">
+            <div class="ci-l">Nombre Tela</div>
+            <input class="ci-i tl" id="nm-nom" value="${c.nom || ''}" placeholder="Nombre descriptivo">
+          </div>
+          <div style="grid-column:span 2">
+            <div class="ci-l">Tela (Item)</div>
+            <input class="ci-i tl" id="nm-tela" value="${c.tip || ''}" placeholder="Referencia">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Visillo</div>
+            <input class="ci-i tl" id="nm-visillo" placeholder="Opcional">
+          </div>
+
+          <!-- MEDIDAS -->
           <div style="grid-column:span 1">
             <div class="ci-l">Ancho Hueco</div>
             <input class="ci-i" type="number" id="nm-ancho" step="0.01" placeholder="0.00">
@@ -370,21 +384,29 @@ export const ui = {
             <input class="ci-i" type="number" id="nm-alto" step="0.01" placeholder="0.00">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Medida Hoja</div>
-            <input class="ci-i" type="number" id="nm-med-hoja" step="0.01" placeholder="0.00">
+            <div class="ci-l">Med. Hoja</div>
+            <input class="ci-i" type="number" id="nm-med-hoja" step="0.01" placeholder="Auto">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Nº Hojas</div>
+            <div class="ci-l">Hojas</div>
             <input class="ci-i" type="number" id="nm-hojas" value="${c.nH}" min="1">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Fruncido</div>
-            <input class="ci-i" type="number" id="nm-fr" step="0.1" value="${c.fr}">
+            <div class="ci-l">Medida 2</div>
+            <input class="ci-i" type="number" id="nm-med2" step="0.01" placeholder="Opcional">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Repetición</div>
+            <input class="ci-i" type="number" id="nm-rep" step="0.1" placeholder="cm">
           </div>
 
           <!-- PARÁMETROS -->
           <div style="grid-column:span 1">
-            <div class="ci-l">Bajo y Cresta</div>
+            <div class="ci-l">Fruncido</div>
+            <input class="ci-i" type="number" id="nm-fr" step="0.1" value="${c.fr}">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Bajo/Cresta</div>
             <input class="ci-i" type="number" id="nm-bj" step="0.01" value="${c.bj}">
           </div>
           <div style="grid-column:span 1">
@@ -392,29 +414,47 @@ export const ui = {
             <input class="ci-i" type="number" id="nm-ci" step="0.01" value="${c.ci}">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Precio Conf.</div>
-            <input class="ci-i" type="number" id="nm-cc" step="0.01" value="${c.pC}" placeholder="€/m">
+            <div class="ci-l">Factor Frunce</div>
+            <input class="ci-i" type="number" id="nm-ff" step="0.1" placeholder="1.0">
           </div>
+          <div style="grid-column:span 2"></div>
+
+          <!-- COSTES -->
           <div style="grid-column:span 1">
-            <div class="ci-l">Precio Tela</div>
+            <div class="ci-l">€/m Tela</div>
             <input class="ci-i" type="number" id="nm-pt" step="0.01" value="${c.pT}">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Precio Inst.</div>
-            <input class="ci-i" type="number" id="nm-pi" step="0.01" placeholder="0.00">
+            <div class="ci-l">€/m Visillo</div>
+            <input class="ci-i" type="number" id="nm-pv" step="0.01" placeholder="0.00">
           </div>
           <div style="grid-column:span 1">
-            <div class="ci-l">Número Horas</div>
-            <input class="ci-i" type="number" id="nm-horas" step="0.5" placeholder="0">
+            <div class="ci-l">Coste Conf.</div>
+            <input class="ci-i" type="number" id="nm-cc" step="0.01" value="${c.pC}" placeholder="€/m">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Coste Inst.</div>
+            <input class="ci-i" type="number" id="nm-ci-cost" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Otros</div>
+            <input class="ci-i" type="number" id="nm-otros" step="0.01" placeholder="0.00">
+          </div>
+          <div style="grid-column:span 1">
+            <div class="ci-l">Descuento</div>
+            <input class="ci-i" type="number" id="nm-desc" step="0.01" placeholder="€">
           </div>
 
-          <!-- MARGEN -->
+          <!-- VENTA -->
           <div style="grid-column:span 1">
             <div class="ci-l">Margen %</div>
             <input class="ci-i" type="number" id="nm-mg" step="1" value="${c.mg}">
           </div>
-          
-          <div style="grid-column:span 5;display:flex;align-items:flex-end;justify-content:flex-end">
+          <div style="grid-column:span 1">
+            <div class="ci-l">IVA %</div>
+            <input class="ci-i" type="number" id="nm-iva" step="1" value="21">
+          </div>
+          <div style="grid-column:span 2;display:flex;align-items:flex-end;justify-content:flex-end">
              <button class="btn btn-rust btn-sm" id="btn-add-med" style="width:100%;height:34px">
                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                Añadir medición
