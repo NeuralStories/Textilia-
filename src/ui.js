@@ -1,5 +1,5 @@
-/* ── UI HELPERS ── */
-import { calc, tots, cuadrante, fmtE, fmtM } from './calculos.js';
+﻿/* ── UI HELPERS ── */
+import { calc, tots, cuadrante, fmtE, fmtM, fmtCM } from './calculos.js';
 
 let _sT; // Timer for save indicator
 
@@ -10,11 +10,11 @@ export const ui = {
     el.className = 'toast ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
     el.textContent = msg;
     c.appendChild(el);
-    setTimeout(() => { 
-      el.style.transition = '.3s'; 
-      el.style.opacity = '0'; 
-      el.style.transform = 'translateY(-8px)'; 
-      setTimeout(() => el.remove(), 300); 
+    setTimeout(() => {
+      el.style.transition = '.3s';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-8px)';
+      setTimeout(() => el.remove(), 300);
     }, 3000);
   },
 
@@ -112,18 +112,18 @@ export const ui = {
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
         ${hs.map(h => {
-          const ok = h.an > 0 && h.al > 0;
-          return `<div style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${ok ? 'var(--sage-bg)' : 'var(--pap-2)'};font-size:12px;font-weight:700;color:${ok ? 'var(--sage)' : 'var(--pap-4)'}">
+      const ok = h.an > 0 && h.al > 0;
+      return `<div style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:${ok ? 'var(--sage-bg)' : 'var(--pap-2)'};font-size:12px;font-weight:700;color:${ok ? 'var(--sage)' : 'var(--pap-4)'}">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">${ok ? '<polyline points="20 6 9 17 4 12"/>' : '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'}</svg>
             ${h.num}
           </div>`;
-        }).join('')}
+    }).join('')}
       </div>`;
   },
 
   renderRel(o, hs, t, lkAll, lkPrecio) {
     const c = o.cfg;
-    const isTec = !lkPrecio && o.estado !== 'cerrada'; // Simplified check based on passed params
+    const isTec = !lkPrecio && o.estado !== 'cerrada';
 
     document.getElementById('cfgS').innerHTML = isTec
       ? `<div><div class="ci-l">Tipo tela</div>
@@ -148,39 +148,57 @@ export const ui = {
         <div><div class="ci-l">P.Tela €/m</div><input class="ci-i" type="number" step="0.01" value="${c.pT}" ${lkAll ? 'disabled' : ''} onchange="upCfg('pT',+this.value)"></div>
         <div><div class="ci-l">Margen %</div><input class="ci-i" type="number" step="1" value="${c.mg}" ${lkAll ? 'disabled' : ''} onchange="upCfg('mg',+this.value)"></div>`;
 
-    // Render Manual Entry Form
-    if (!lkAll) {
-        this.renderMedForm(o);
-    } else {
-        document.getElementById('medForm').innerHTML = '';
-    }
+    if (!lkAll) { this.renderMedForm(o); } else { document.getElementById('medForm').innerHTML = ''; }
 
-    document.getElementById('relB').innerHTML = hs.map(h => `
+    document.getElementById('relB').innerHTML = hs.map(h => {
+      const beneficio = h.bn !== undefined ? h.bn : ((h.th || 0) - ((h.ct || 0) + (h.cc || 0)));
+
+      return `
       <tr>
-        <td class="h">${h.num}</td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"></td>
-        <td><input class="c-i" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"></td>
-        <td class="n">${h.mh}</td>
-        <td class="n">${h.nc}</td>
-        <td class="n ac">${h.mt}</td>
+        <td class="n">${h.num}</td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.pC}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','pC',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.pT}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','pT',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.pi}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','pi',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.1" value="${h.fr}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','fr',+this.value)"></td>
+        <td><input class="c-i r" type="number" step="0.01" value="${h.bj}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','bj',+this.value)"></td>
+        <td class="n">${fmtM(h.mh)}</td>
+        <td><input class="c-i r" type="number" step="1" value="${h.nc}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','nc',+this.value)"></td>
+        <td class="n">${fmtM(h.mt)}</td>
         <td class="n">${fmtE(h.ct)}</td>
         <td class="n">${fmtE(h.cc)}</td>
-        <td class="n">${fmtE(h.th)}</td>
+        <td class="n" style="font-weight:bold;">${fmtE(h.th)}</td>
+        <td><input class="c-i r" type="number" step="1" value="${h.mg}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','mg',+this.value)"></td>
+        <td class="n" style="color:var(--sage);">${fmtE(beneficio)}</td>
         <td>${!lkAll ? `<button class="del-btn" onclick="delHab('${h.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>` : ''}</td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
+
+    const totalCoste = (t.ct || 0) + (t.cc || 0);
+    const totalBeneficio = (t.th || 0) - totalCoste;
+
     document.getElementById('relF').innerHTML = `
-      <tr class="ft"><td class="h">TOTAL</td><td colspan="4"></td>
-        <td class="n">${fmtM(t.mt)}</td><td class="n">${fmtE(t.ct)}</td>
-        <td class="n">${fmtE(t.cc)}</td><td class="n">${fmtE(t.th)}</td><td></td></tr>`;
+      <tr class="ft">
+        <td class="n">TOTAL</td>
+        <td colspan="9"></td>
+        <td class="n">${fmtM(t.mt)}</td>
+        <td class="n">${fmtE(t.ct)}</td>
+        <td class="n">${fmtE(t.cc)}</td>
+        <td class="n" style="font-weight:bold;">${fmtE(t.th)}</td>
+        <td></td>
+        <td class="n" style="color:var(--sage);">${fmtE(totalBeneficio)}</td>
+        <td></td>
+      </tr>`;
 
     document.getElementById('mobHL').innerHTML = hs.map(h => {
-      const nH = +c.nH;
+      const nH = h.nc;
       return `
       <div class="mhc" id="mhc-${h.id}">
         <div class="mhc-hd">
           <div style="display:flex;flex-direction:column;gap:2px">
             <div class="mhc-num">Hab. <strong>${h.num}</strong></div>
-            <div class="mhc-hojas">${nH} hoja${nH > 1 ? 's' : ''} · fruncido ${c.fr}× · ${h.mh}m/hoja</div>
+            <div class="mhc-hojas">${nH} hoja${nH > 1 ? 's' : ''} · fruncido ${h.fr}× · ${h.mh}m/hoja</div>
           </div>
           <div style="margin-left:auto;text-align:right">
             <div class="mhc-mts">${h.mt}m</div>
@@ -188,47 +206,13 @@ export const ui = {
           </div>
         </div>
         <div class="mhc-inps">
-          <div class="mhc-cell">
-            <div class="mhc-lbl">Ancho hueco</div>
-            <div class="mhc-wrap">
-              <input class="mhc-field" type="number" step="0.01" inputmode="decimal"
-                value="${h.an || ''}" placeholder="0.00" ${lkAll ? 'disabled' : ''}
-                onchange="upHab('${h.id}','an',+this.value)">
-              <span class="mhc-unit">m</span>
-            </div>
-          </div>
-          <div class="mhc-cell">
-            <div class="mhc-lbl">Alto</div>
-            <div class="mhc-wrap">
-              <input class="mhc-field" type="number" step="0.01" inputmode="decimal"
-                value="${h.al || ''}" placeholder="0.00" ${lkAll ? 'disabled' : ''}
-                onchange="upHab('${h.id}','al',+this.value)">
-              <span class="mhc-unit">m</span>
-            </div>
-          </div>
+          <div class="mhc-cell"><div class="mhc-lbl">Ancho hueco</div><div class="mhc-wrap"><input class="mhc-field" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"><span class="mhc-unit">m</span></div></div>
+          <div class="mhc-cell"><div class="mhc-lbl">Alto</div><div class="mhc-wrap"><input class="mhc-field" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"><span class="mhc-unit">m</span></div></div>
         </div>
-        ${isTec ? `
-        <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--pap-2)">
-          <div style="padding:10px 14px;border-right:1px solid var(--pap-2)">
-            <div class="mhc-lbl" style="margin-bottom:6px">Tipo tela</div>
-            <select style="width:100%;background:transparent;border:none;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);outline:none;-webkit-appearance:none;cursor:pointer" ${lkAll ? 'disabled' : ''} onchange="upCfg('tip',this.value)">
-              ${['VISILLO', 'BLACKOUT', 'LINO', 'OTRO'].map(t => `<option${c.tip === t ? ' selected' : ''}>${t}</option>`).join('')}
-            </select>
-          </div>
-          <div style="padding:10px 14px">
-            <div class="mhc-lbl" style="margin-bottom:6px">N.º hojas</div>
-            <div style="display:flex;gap:4px">
-              <div onclick="${lkAll ? '' : 'upCfg(\'nH\',1)'}"
-                style="flex:1;text-align:center;padding:7px 4px;border-radius:6px;border:1.5px solid ${nH === 1 ? 'var(--rust)' : 'var(--pap-3)'};background:${nH === 1 ? 'var(--rust-bg)' : 'transparent'};color:${nH === 1 ? 'var(--rust)' : 'var(--pap-4)'};font-size:13px;font-weight:800;cursor:${lkAll ? 'not-allowed' : 'pointer'};transition:.15s">1</div>
-              <div onclick="${lkAll ? '' : 'upCfg(\'nH\',2)'}"
-                style="flex:1;text-align:center;padding:7px 4px;border-radius:6px;border:1.5px solid ${nH === 2 ? 'var(--rust)' : 'var(--pap-3)'};background:${nH === 2 ? 'var(--rust-bg)' : 'transparent'};color:${nH === 2 ? 'var(--rust)' : 'var(--pap-4)'};font-size:13px;font-weight:800;cursor:${lkAll ? 'not-allowed' : 'pointer'};transition:.15s">2</div>
-            </div>
-          </div>
-        </div>` : ''}
         <div class="mhc-calcs">
           <div class="mhc-calc"><div class="mhc-cl">Med. hoja</div><div class="mhc-cv ac">${h.mh > 0 ? h.mh + 'm' : '—'}</div></div>
           <div class="mhc-calc"><div class="mhc-cl">Mts tela</div><div class="mhc-cv">${h.mt > 0 ? h.mt + 'm' : '—'}</div></div>
-          <div class="mhc-calc"><div class="mhc-cl">${isTec ? 'Riel' : 'Total'}</div><div class="mhc-cv">${isTec ? (h.rf > 0 ? h.rf + 'm' : '—') : fmtE(h.th)}</div></div>
+          <div class="mhc-calc"><div class="mhc-cl">Total</div><div class="mhc-cv">${fmtE(h.th)}</div></div>
         </div>
         ${!lkAll ? `<div class="mhc-foot"><button class="btn btn-danger btn-sm" onclick="delHab('${h.id}')">Eliminar hab.</button></div>` : ''}
       </div>`;
@@ -237,261 +221,68 @@ export const ui = {
     document.getElementById('totsB').innerHTML = `
       <div><div class="t-l">Habitaciones</div><div class="t-v">${hs.length}</div></div>
       <div><div class="t-l">Metros tela</div><div class="t-v ac">${t.mt}m</div></div>
-      <div><div class="t-l">${isTec ? 'Med. hoja' : 'Coste total'}</div><div class="t-v">${isTec ? (hs.length ? hs[0].mh + 'm' : '—') : fmtE(t.ph)}</div></div>
-      <div><div class="t-l">${isTec ? 'Tipo tela' : 'Con margen'}</div><div class="t-v" style="${isTec ? 'font-size:16px;letter-spacing:0' : ''}">${isTec ? c.tip : fmtE(t.th)}</div></div>`;
+      <div><div class="t-l">Coste total</div><div class="t-v">${fmtE(t.ph)}</div></div>
+      <div><div class="t-l">Con margen</div><div class="t-v">${fmtE(t.th)}</div></div>`;
   },
 
   renderCon(o, hs, t) {
     const c = o.cfg;
-    
-    // 1. Chunk data into blocks of 6
     const chunkSize = 6;
     const chunks = [];
-    for (let i = 0; i < hs.length; i += chunkSize) {
-      chunks.push(hs.slice(i, i + chunkSize));
-    }
-    
-    if (chunks.length === 0) {
-        // Empty state if no rooms
-        chunks.push([]);
-    }
+    for (let i = 0; i < hs.length; i += chunkSize) { chunks.push(hs.slice(i, i + chunkSize)); }
+    if (chunks.length === 0) chunks.push([]);
 
-    // 2. Build HTML for each chunk
     const html = chunks.map((chunk, i) => {
       const chunkTotal = chunk.reduce((acc, h) => acc + h.sm, 0);
-      
       const rows = chunk.map(h => {
-        // Logic for Medidas Cell
-        // 1 Hoja: Ancho encima, Alto derecha (bottom right)
-        // 2 Hojas: "A + B" encima, Alto derecha
-        let widthStr = '';
-        if (c.nH === 1) {
-            widthStr = `${h.acCon}`;
-        } else {
-            widthStr = `${h.acCon} + ${h.acCon}`;
-        }
-        
-        // Logic for Corte Cell
-        // [Cantidad] | [Tipo] | [Ancho] | = | [Subtotal]
-        const corteStr = `${h.nc} | ${c.tip} | ${h.acCon} | = | ${h.sm}`;
-
-        return `
-          <tr>
-            <td class="tc-hab">${h.num}</td>
-            <td class="tc-med">
-                <div class="med-box">
-                    <div class="med-top">${widthStr}</div>
-                    <div class="med-line"></div>
-                    <div class="med-bot">${h.alCon}</div>
-                </div>
-            </td>
-            <td class="tc-corte">${corteStr}</td>
-            <td class="tc-suma">${h.sm} m</td>
-          </tr>
-        `;
+        let widthStr = h.nc === 1 ? `${h.acCon}` : `${h.acCon} + ${h.acCon}`;
+        const corteStr = `${h.nc} &nbsp;|&nbsp; ${c.tip} &nbsp;|&nbsp; ${h.acCon} &nbsp;|&nbsp; = &nbsp;|&nbsp; ${h.sm}`;
+        return `<tr><td style="text-align:center; font-weight:700;">${h.num}</td><td style="text-align:center; padding:0;"><div class="medida-wrap"><div class="medida-ancho">${widthStr}</div><div class="medida-line"></div><div class="medida-alto">${h.alCon}</div></div></td><td style="text-align:center">${corteStr}</td><td style="text-align:right; font-weight:700; padding-right:15px;">${h.sm} m</td></tr>`;
       }).join('');
 
-      return `
-        <div class="taller-page">
-            <div class="taller-header">
-                <div class="th-left">OBRA: <strong>${o.nombre}</strong></div>
-                <div class="th-right">FECHA: <strong>${new Date().toLocaleDateString()}</strong></div>
-            </div>
-            <table class="taller-table">
-                <thead>
-                    <tr>
-                        <th width="10%">N° HAB</th>
-                        <th width="20%">MEDIDAS</th>
-                        <th width="55%">CORTE</th>
-                        <th width="15%">SUMA m</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rows || '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px">Sin habitaciones registradas</td></tr>'}
-                </tbody>
-            </table>
-            <div class="taller-footer">
-                <div class="tf-total">TOTAL BLOQUE: <strong>${chunkTotal.toFixed(2)} m</strong></div>
-                <div class="tf-grid">
-                    <div class="tf-cell">Cliente: ${o.c1n || ''}</div>
-                    <div class="tf-cell">Fecha:</div>
-                    <div class="tf-cell">Costurera:</div>
-                    <div class="tf-cell">Confección:</div>
-                    <div class="tf-cell">Garfios:</div>
-                    <div class="tf-cell">Tela: ${c.nom || c.tip} / ${t.sm}m Total</div>
-                </div>
-            </div>
-        </div>
-      `;
+      return `<div class="print-page"><div class="print-header"><div>OBRA: <span style="font-weight:700;">${o.nombre.toUpperCase()}</span></div><div>FECHA: <span style="font-weight:700;">${new Date().toLocaleDateString()}</span></div></div><div class="print-box"><table class="print-table"><thead><tr><th width="10%">N° HAB</th><th width="20%">MEDIDAS</th><th width="55%">CORTE</th><th width="15%">SUMA m</th></tr></thead><tbody>${rows || '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">Sin habitaciones registradas</td></tr>'}</tbody></table><div class="print-subtotal">TOTAL BLOQUE: <span style="font-weight:700;">${chunkTotal.toFixed(2)} m</span></div><div class="print-footer"><div class="pf-grid"><div class="pf-row"><span class="pf-label">Cliente:</span> <span class="pf-val">${o.c1n || ''}</span>${!o.c1n ? '<span class="pf-line"></span>' : ''}</div><div class="pf-row"><span class="pf-label">Fecha:</span> <span class="pf-line"></span></div><div class="pf-row"><span class="pf-label">Costurera:</span> <span class="pf-line"></span></div><div class="pf-row"><span class="pf-label">Confección:</span> <span class="pf-line"></span></div><div class="pf-row"><span class="pf-label">Garfios:</span> <span class="pf-line"></span></div><div class="pf-row"><span class="pf-label">Tela:</span> <span class="pf-val">${c.nom || c.tip} / ${t.sm}m Total</span></div></div></div></div></div>`;
     }).join('');
 
-    // 3. Inject into panel
     const panel = document.getElementById('pn-confeccion');
-    panel.innerHTML = `
-        <div class="pi obra-safe">
-            <div class="mod-hd no-print">
-                <div class="mod-title">Hoja de confección</div>
-                <span style="font-size:13px;color:var(--ink-35)">Vista de taller</span>
-                <button class="btn btn-outline btn-sm" onclick="window.print()" style="margin-left:auto">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-                    Imprimir / PDF
-                </button>
-            </div>
-            <div class="taller-container">
-                ${html}
-            </div>
-        </div>
-    `;
+    panel.innerHTML = `<div class="pi obra-safe"><div class="mod-hd no-print"><div class="mod-title">Hoja de confección</div><span style="font-size:13px;color:var(--ink-35)">Vista de taller</span><button class="btn btn-outline btn-sm" onclick="window.print()" style="margin-left:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> Imprimir / PDF</button></div><div class="print-container">${html}</div></div>`;
   },
 
   renderMedForm(o) {
-    const c = o.cfg;
+    const c = o.cfg || {};
     const nextNum = 100 + o.habs.length + 1;
-    
     document.getElementById('medForm').innerHTML = `
       <div style="background:var(--white);border:1px solid var(--pap-3);border-radius:var(--r12);padding:16px;margin-bottom:14px;box-shadow:var(--s-xs)">
         <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--rust);margin-bottom:12px;display:flex;align-items:center;gap:6px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Nueva medición
+          Nueva medici&#243;n
         </div>
-        
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;row-gap:16px">
-          <!-- IDENTIFICACIÓN -->
-          <div style="grid-column:span 1">
-            <div class="ci-l">Habitación</div>
-            <input class="ci-i tl" id="nm-hab" value="${nextNum}" placeholder="Ej: 101">
-          </div>
-          <div style="grid-column:span 2">
-            <div class="ci-l">Nombre Tela</div>
-            <input class="ci-i tl" id="nm-nom" value="${c.nom || ''}" placeholder="Nombre descriptivo">
-          </div>
-          <div style="grid-column:span 2">
-            <div class="ci-l">Tela (Item)</div>
-            <input class="ci-i tl" id="nm-tela" value="${c.tip || ''}" placeholder="Referencia">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Visillo</div>
-            <input class="ci-i tl" id="nm-visillo" placeholder="Opcional">
-          </div>
-
-          <!-- MEDIDAS -->
-          <div style="grid-column:span 1">
-            <div class="ci-l">Ancho Hueco</div>
-            <input class="ci-i" type="number" id="nm-ancho" step="0.01" placeholder="0.00">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Altura</div>
-            <input class="ci-i" type="number" id="nm-alto" step="0.01" placeholder="0.00">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Med. Hoja</div>
-            <input class="ci-i" type="number" id="nm-med-hoja" step="0.01" placeholder="Auto">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Hojas</div>
-            <input class="ci-i" type="number" id="nm-hojas" value="${c.nH}" min="1">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Medida 2</div>
-            <input class="ci-i" type="number" id="nm-med2" step="0.01" placeholder="Opcional">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Repetición</div>
-            <input class="ci-i" type="number" id="nm-rep" step="0.1" placeholder="cm">
-          </div>
-
-          <!-- PARÁMETROS -->
-          <div style="grid-column:span 1">
-            <div class="ci-l">Fruncido</div>
-            <input class="ci-i" type="number" id="nm-fr" step="0.1" value="${c.fr}">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Bajo/Cresta</div>
-            <input class="ci-i" type="number" id="nm-bj" step="0.01" value="${c.bj}">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Cierre</div>
-            <input class="ci-i" type="number" id="nm-ci" step="0.01" value="${c.ci}">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Factor Frunce</div>
-            <input class="ci-i" type="number" id="nm-ff" step="0.1" placeholder="1.0">
-          </div>
-          <div style="grid-column:span 2"></div>
-
-          <!-- COSTES -->
-          <div style="grid-column:span 1">
-            <div class="ci-l">€/m Tela</div>
-            <input class="ci-i" type="number" id="nm-pt" step="0.01" value="${c.pT}">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">€/m Visillo</div>
-            <input class="ci-i" type="number" id="nm-pv" step="0.01" placeholder="0.00">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Coste Conf.</div>
-            <input class="ci-i" type="number" id="nm-cc" step="0.01" value="${c.pC}" placeholder="€/m">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Coste Inst.</div>
-            <input class="ci-i" type="number" id="nm-ci-cost" step="0.01" placeholder="0.00">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Otros</div>
-            <input class="ci-i" type="number" id="nm-otros" step="0.01" placeholder="0.00">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">Descuento</div>
-            <input class="ci-i" type="number" id="nm-desc" step="0.01" placeholder="€">
-          </div>
-
-          <!-- VENTA -->
-          <div style="grid-column:span 1">
-            <div class="ci-l">Margen %</div>
-            <input class="ci-i" type="number" id="nm-mg" step="1" value="${c.mg}">
-          </div>
-          <div style="grid-column:span 1">
-            <div class="ci-l">IVA %</div>
-            <input class="ci-i" type="number" id="nm-iva" step="1" value="21">
-          </div>
-          <div style="grid-column:span 2;display:flex;align-items:flex-end;justify-content:flex-end">
-             <button class="btn btn-rust btn-sm" id="btn-add-med" style="width:100%;height:34px">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-               Añadir medición
-             </button>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:10px;row-gap:14px">
+          <div><div class="ci-l">HABITACION</div><input class="ci-i tl" id="nm-hab" value="${nextNum}"></div>
+          <div><div class="ci-l">ANCHO HUECO</div><input class="ci-i" type="number" id="nm-ancho" step="0.01"></div>
+          <div><div class="ci-l">ALTURA</div><input class="ci-i" type="number" id="nm-alto" step="0.01"></div>
+          <div><div class="ci-l">P. CONF.</div><input class="ci-i" type="number" id="nm-pconf" value="${c.pC || 0}" step="0.01"></div>
+          <div><div class="ci-l">P. TELA</div><input class="ci-i" type="number" id="nm-ptela" value="${c.pT || 0}" step="0.01"></div>
+          <div><div class="ci-l">P. INST.</div><input class="ci-i" type="number" id="nm-pinst" value="${c.pi || 0}" step="0.01"></div>
+          <div><div class="ci-l">FRUNCIDO</div><input class="ci-i" type="number" id="nm-fr" value="${c.fr || 0}" step="0.1"></div>
+          <div><div class="ci-l">BAJO/CRESTA</div><input class="ci-i" type="number" id="nm-bj" value="${c.bj || 0}" step="0.01"></div>
+          <div><div class="ci-l">MED. HOJA</div><input class="ci-i" type="number" id="nm-med-hoja" step="0.01"></div>
+          <div><div class="ci-l">N&#186; HOJAS</div><input class="ci-i" type="number" id="nm-hojas" value="${c.nH || 1}"></div>
+          <div><div class="ci-l">MTS TELA</div><input class="ci-i" type="number" id="nm-mtstela" step="0.01"></div>
+          <div><div class="ci-l">COSTE TELA</div><input class="ci-i" type="number" id="nm-costetela" step="0.01"></div>
+          <div><div class="ci-l">COSTE CONF.</div><input class="ci-i" type="number" id="nm-costeconf" step="0.01"></div>
+          <div><div class="ci-l">P. HUECO</div><input class="ci-i" type="number" id="nm-phueco" step="0.01"></div>
+          <div><div class="ci-l">MARGEN</div><input class="ci-i" type="number" id="nm-margen" value="${c.mg || 0}"></div>
+          <div><div class="ci-l">BENEFICIO</div><input class="ci-i" type="number" id="nm-beneficio" step="0.01"></div>
         </div>
-      </div>
-    `;
-    
-    // Bind click event
-    document.getElementById('btn-add-med').onclick = () => window.addMedicion();
+      </div>`;
   },
 
   renderCuad(hs) {
-    document.getElementById('cuadB').innerHTML = hs.map(h => `
-      <tr>
-        <td class="h">${h.num}</td>
-        <td class="n">${h.an}</td><td class="n">${h.al}</td>
-        <td class="n">${h.aEst}</td><td class="n ac">${h.aEst}</td>
-        <td class="n">${h.nc}</td><td class="n ac">${h.alCu}</td>
-      </tr>`).join('');
-    document.getElementById('cuadG').innerHTML = cuadrante(hs).map(g => `
-      <div class="cuad-card">
-        <div class="cuad-d">${g.a}<span class="cuad-x">×</span>${g.al}</div>
-        <div class="cuad-h">Hab: ${g.hs.join(', ')}</div>
-        <div class="cuad-b">${g.c} corte${g.c > 1 ? 's' : ''}</div>
-      </div>`).join('');
+    document.getElementById('cuadB').innerHTML = hs.map(h => `<tr><td class="h">${h.num}</td><td class="n">${h.an}</td><td class="n">${h.al}</td><td class="n">${h.aEst}</td><td class="n ac">${h.aEst}</td><td class="n">${h.nc}</td><td class="n ac">${h.alCu}</td></tr>`).join('');
+    document.getElementById('cuadG').innerHTML = cuadrante(hs).map(g => `<div class="cuad-card"><div class="cuad-d">${g.a}<span class="cuad-x">×</span>${g.al}</div><div class="cuad-h">Hab: ${g.hs.join(', ')}</div><div class="cuad-b">${g.c} corte${g.c > 1 ? 's' : ''}</div></div>`).join('');
   },
 
   renderRiel(hs, lk) {
-    document.getElementById('rielB').innerHTML = hs.map(h => `
-      <tr>
-        <td class="h">${h.num}</td>
-        <td class="n">${h.an}m</td><td class="n ac">${h.rf}m</td>
-        <td class="n">${h.sop}</td>
-        <td><select class="c-i" style="width:105px;text-align:left;font-family:var(--sans)" ${lk ? 'disabled' : ''}><option value="">—</option><option>T (Techo)</option><option>F (Fachada)</option></select></td>
-        <td><input class="c-i" type="number" placeholder="0" min="0" style="width:55px" ${lk ? 'disabled' : ''}></td>
-      </tr>`).join('');
+    document.getElementById('rielB').innerHTML = hs.map(h => `<tr><td class="h">${h.num}</td><td class="n">${h.an}m</td><td class="n ac">${h.rf}m</td><td class="n">${h.sop}</td><td><select class="c-i" style="width:105px;text-align:left;font-family:var(--sans)" ${lk ? 'disabled' : ''}><option value="">—</option><option>T (Techo)</option><option>F (Fachada)</option></select></td><td><input class="c-i" type="number" placeholder="0" min="0" style="width:55px" ${lk ? 'disabled' : ''}></td></tr>`).join('');
   }
 };
