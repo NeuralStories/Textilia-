@@ -38,6 +38,18 @@
     --t: .16s;
 }
 
+.force-right {
+    text-align: right !important;
+}
+
+.force-center {
+    text-align: center !important;
+}
+
+.force-left {
+    text-align: left !important;
+}
+
 *,
 *::before,
 *::after {
@@ -1662,12 +1674,19 @@ button {
 }
 
 .ci-l {
+    display: block;
+    width: 100%;
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .07em;
     color: var(--pap-4);
-    margin-bottom: 4px
+    margin-bottom: 4px;
+    text-align: right !important;
+}
+
+.ci-l.r {
+    text-align: right !important;
 }
 
 .ci-i {
@@ -1696,10 +1715,8 @@ button {
 }
 
 .ci-i.tl {
-    text-align: left;
+    text-align: right !important;
     color: var(--ink);
-    font-family: var(--sans);
-    font-weight: 600
 }
 
 /* Desktop table */
@@ -1722,9 +1739,9 @@ button {
 }
 
 .dtbl th {
-    padding: 6px 4px;
-    text-align: center;
-    font-size: 9px;
+    padding: 6px 8px;
+    text-align: right !important;
+    font-size: 9.5px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .05em;
@@ -1740,7 +1757,7 @@ button {
 }
 
 .dtbl td {
-    padding: 6px 4px;
+    padding: 4px 8px;
     border-bottom: 1px solid var(--pap-2);
     border-right: 1px solid var(--pap-2);
     color: var(--ink-60);
@@ -1759,8 +1776,8 @@ button {
 .dtbl td.h {
     font-weight: 800;
     color: var(--ink);
-    font-size: 12px;
-    text-align: left;
+    font-size: 11px;
+    text-align: right;
 }
 
 .dtbl td.ac {
@@ -1946,7 +1963,7 @@ button {
     font-weight: 700;
     color: var(--ink);
     outline: none;
-    text-align: left;
+    text-align: right;
     width: 100%;
     transition: border-color var(--t)
 }
@@ -2311,7 +2328,8 @@ button {
     text-transform: uppercase;
     letter-spacing: .09em;
     color: rgba(253, 252, 250, .35);
-    margin-bottom: 4px
+    margin-bottom: 4px;
+    text-align: right;
 }
 
 .kpi-v {
@@ -2394,7 +2412,8 @@ button {
     font-weight: 700;
     color: var(--ink-35);
     flex-shrink: 0;
-    min-width: 100px
+    min-width: 100px;
+    text-align: right;
 }
 
 .irow-v {
@@ -2420,7 +2439,7 @@ button {
 
 .res-hab-tbl th {
     padding: 7px 10px;
-    text-align: left;
+    text-align: right !important;
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;

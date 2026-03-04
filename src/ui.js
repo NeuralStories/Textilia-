@@ -64,21 +64,42 @@ export const ui = {
       <div class="irow"><div class="irow-l">P. Tela</div><div class="irow-v mono">${fmtE(c.pT)}/m</div></div>
       <div class="irow"><div class="irow-l">P. Confección</div><div class="irow-v mono">${fmtE(c.pC)}/m</div></div>`;
 
-    document.getElementById('rHabB').innerHTML = hs.map(h => `
+    document.getElementById('rHabB').innerHTML = hs.map(h => {
+      const beneficio = h.bn !== undefined ? h.bn : ((h.th || 0) - ((h.ct || 0) + (h.cc || 0)));
+      return `
       <tr>
-        <td class="h">${h.num}</td>
-        <td class="n">${h.an}m</td><td class="n">${h.al}m</td>
-        <td class="n">${h.mh}m</td><td class="n">${h.nc}</td>
-        <td class="n ac">${h.mt}m</td>
-        <td class="n">${fmtE(h.ct)}</td><td class="n">${fmtE(h.cc)}</td>
-        <td class="n">${fmtE(h.ph)}</td><td class="n ac">${fmtE(h.th)}</td>
-      </tr>`).join('');
+        <td class="h force-right">${h.num}</td>
+        <td class="n">${h.an}</td>
+        <td class="n">${h.al}</td>
+        <td class="n">${fmtE(c.pC)}</td>
+        <td class="n">${fmtE(c.pT)}</td>
+        <td class="n">${fmtE(h.pi || c.pi || 0)}</td>
+        <td class="n">${h.fr}</td>
+        <td class="n">${h.bj}</td>
+        <td class="n">${fmtM(h.mh)}</td>
+        <td class="n">${h.nc}</td>
+        <td class="n">${fmtM(h.mt)}</td>
+        <td class="n">${fmtE(h.ct)}</td>
+        <td class="n">${fmtE(h.cc)}</td>
+        <td class="n" style="font-weight:bold;">${fmtE(h.th)}</td>
+        <td class="n">${h.mg}%</td>
+        <td class="n" style="color:var(--sage);">${fmtE(beneficio)}</td>
+      </tr>`;
+    }).join('');
+
+    const totalCosteRes = (t.ct || 0) + (t.cc || 0);
+    const totalBeneficioRes = (t.th || 0) - totalCosteRes;
+
     document.getElementById('rHabF').innerHTML = `
       <tr class="ft">
-        <td class="h">TOTAL</td><td colspan="4"></td>
+        <td class="h force-right">TOTAL</td>
+        <td colspan="9"></td>
         <td class="n">${fmtM(t.mt)}</td>
-        <td class="n">${fmtE(t.ct)}</td><td class="n">${fmtE(t.cc)}</td>
-        <td class="n">${fmtE(t.ph)}</td><td class="n">${fmtE(t.th)}</td>
+        <td class="n">${fmtE(t.ct)}</td>
+        <td class="n">${fmtE(t.cc)}</td>
+        <td class="n" style="font-weight:bold;">${fmtE(t.th)}</td>
+        <td></td>
+        <td class="n" style="color:var(--sage);">${fmtE(totalBeneficioRes)}</td>
       </tr>`;
 
     document.getElementById('rConf').innerHTML = `
@@ -155,7 +176,7 @@ export const ui = {
 
       return `
       <tr>
-        <td class="n">${h.num}</td>
+        <td class="n force-right" style="padding:0;"><input class="c-i tl force-right" type="text" value="${h.num}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','num',this.value)" style="width: 100%; border:none; background:transparent; font-weight: bold;"></td>
         <td><input class="c-i r" type="number" step="0.01" value="${h.an}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','an',+this.value)"></td>
         <td><input class="c-i r" type="number" step="0.01" value="${h.al}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','al',+this.value)"></td>
         <td><input class="c-i r" type="number" step="0.01" value="${h.pC}" ${lkAll ? 'disabled' : ''} onchange="upHab('${h.id}','pC',+this.value)"></td>
@@ -257,22 +278,22 @@ export const ui = {
           Nueva medici&#243;n
         </div>
         <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:10px;row-gap:14px">
-          <div><div class="ci-l">HABITACION</div><input class="ci-i tl" id="nm-hab" value="${nextNum}"></div>
-          <div><div class="ci-l">ANCHO HUECO</div><input class="ci-i" type="number" id="nm-ancho" step="0.01"></div>
-          <div><div class="ci-l">ALTURA</div><input class="ci-i" type="number" id="nm-alto" step="0.01"></div>
-          <div><div class="ci-l">P. CONF.</div><input class="ci-i" type="number" id="nm-pconf" value="${c.pC || 0}" step="0.01"></div>
-          <div><div class="ci-l">P. TELA</div><input class="ci-i" type="number" id="nm-ptela" value="${c.pT || 0}" step="0.01"></div>
-          <div><div class="ci-l">P. INST.</div><input class="ci-i" type="number" id="nm-pinst" value="${c.pi || 0}" step="0.01"></div>
-          <div><div class="ci-l">FRUNCIDO</div><input class="ci-i" type="number" id="nm-fr" value="${c.fr || 0}" step="0.1"></div>
-          <div><div class="ci-l">BAJO/CRESTA</div><input class="ci-i" type="number" id="nm-bj" value="${c.bj || 0}" step="0.01"></div>
-          <div><div class="ci-l">MED. HOJA</div><input class="ci-i" type="number" id="nm-med-hoja" step="0.01"></div>
-          <div><div class="ci-l">N&#186; HOJAS</div><input class="ci-i" type="number" id="nm-hojas" value="${c.nH || 1}"></div>
-          <div><div class="ci-l">MTS TELA</div><input class="ci-i" type="number" id="nm-mtstela" step="0.01"></div>
-          <div><div class="ci-l">COSTE TELA</div><input class="ci-i" type="number" id="nm-costetela" step="0.01"></div>
-          <div><div class="ci-l">COSTE CONF.</div><input class="ci-i" type="number" id="nm-costeconf" step="0.01"></div>
-          <div><div class="ci-l">P. HUECO</div><input class="ci-i" type="number" id="nm-phueco" step="0.01"></div>
-          <div><div class="ci-l">MARGEN</div><input class="ci-i" type="number" id="nm-margen" value="${c.mg || 0}"></div>
-          <div><div class="ci-l">BENEFICIO</div><input class="ci-i" type="number" id="nm-beneficio" step="0.01"></div>
+          <div><div class="ci-l force-right">HABITACION</div><input class="ci-i tl force-right" id="nm-hab" value="${nextNum}" style="color: var(--ink);"></div>
+          <div><div class="ci-l force-right">ANCHO HUECO</div><input class="ci-i force-right" type="number" id="nm-ancho" step="0.01"></div>
+          <div><div class="ci-l force-right">ALTURA</div><input class="ci-i force-right" type="number" id="nm-alto" step="0.01"></div>
+          <div><div class="ci-l force-right">P. CONF.</div><input class="ci-i force-right" type="number" id="nm-pconf" value="${c.pC || 0}" step="0.01"></div>
+          <div><div class="ci-l force-right">P. TELA</div><input class="ci-i force-right" type="number" id="nm-ptela" value="${c.pT || 0}" step="0.01"></div>
+          <div><div class="ci-l force-right">P. INST.</div><input class="ci-i force-right" type="number" id="nm-pinst" value="${c.pi || 0}" step="0.01"></div>
+          <div><div class="ci-l force-right">FRUNCIDO</div><input class="ci-i force-right" type="number" id="nm-fr" value="${c.fr || 0}" step="0.1"></div>
+          <div><div class="ci-l force-right">BAJO/CRESTA</div><input class="ci-i force-right" type="number" id="nm-bj" value="${c.bj || 0}" step="0.01"></div>
+          <div><div class="ci-l force-right">MED. HOJA</div><input class="ci-i force-right" type="number" id="nm-med-hoja" step="0.01"></div>
+          <div><div class="ci-l force-right">N&#186; HOJAS</div><input class="ci-i force-right" type="number" id="nm-hojas" value="${c.nH || 1}"></div>
+          <div><div class="ci-l force-right">MTS TELA</div><input class="ci-i force-right" type="number" id="nm-mtstela" step="0.01"></div>
+          <div><div class="ci-l force-right">COSTE TELA</div><input class="ci-i force-right" type="number" id="nm-costetela" step="0.01"></div>
+          <div><div class="ci-l force-right">COSTE CONF.</div><input class="ci-i force-right" type="number" id="nm-costeconf" step="0.01"></div>
+          <div><div class="ci-l force-right">P. HUECO</div><input class="ci-i force-right" type="number" id="nm-phueco" step="0.01"></div>
+          <div><div class="ci-l force-right">MARGEN</div><input class="ci-i force-right" type="number" id="nm-margen" value="${c.mg || 0}"></div>
+          <div><div class="ci-l force-right">BENEFICIO</div><input class="ci-i force-right" type="number" id="nm-beneficio" step="0.01"></div>
         </div>
       </div>`;
   },
